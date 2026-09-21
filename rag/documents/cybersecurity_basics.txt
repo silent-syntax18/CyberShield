@@ -1,0 +1,219 @@
+CYBERSHIELD 2026 — CYBERSECURITY KNOWLEDGE BASE
+
+1. PHISHING
+Phishing is a cyber attack in which an attacker tries to trick a person into revealing sensitive information such as passwords, banking details, or authentication codes.
+
+Common phishing indicators include:
+- Urgent or threatening language
+- Suspicious or misspelled domains
+- Unexpected attachments
+- Requests for passwords or verification codes
+- Links that redirect to unrelated websites
+- Offers that appear too good to be true
+
+Users should verify the sender and destination URL before clicking links or providing information.
+
+2. MALWARE
+Malware is malicious software designed to damage systems, steal information, disrupt operations, or gain unauthorized access.
+
+Common types include:
+- Virus
+- Worm
+- Trojan
+- Ransomware
+- Spyware
+- Adware
+- Rootkit
+
+Basic defensive measures include keeping software updated, using reputable security software, avoiding suspicious downloads, and maintaining offline or protected backups.
+
+3. RANSOMWARE
+Ransomware is malware that can encrypt files or otherwise make systems unavailable and then demand payment.
+
+Recommended defensive measures:
+- Maintain regular backups
+- Keep operating systems and applications updated
+- Use multi-factor authentication
+- Avoid suspicious email attachments and links
+- Restrict unnecessary administrative privileges
+- Monitor unusual file activity
+
+4. PASSWORD SECURITY
+A strong password should be long, unique, and difficult to guess.
+
+Password security recommendations:
+- Use unique passwords for important accounts
+- Prefer long passphrases
+- Do not reuse passwords
+- Never share passwords
+- Enable multi-factor authentication where available
+- Consider using a reputable password manager
+
+5. MULTI-FACTOR AUTHENTICATION
+Multi-factor authentication (MFA) adds another verification step beyond a password.
+
+Examples include:
+- Authentication applications
+- Security keys
+- Biometric verification
+- One-time verification codes
+
+MFA can reduce the impact of stolen passwords.
+
+6. URL SECURITY
+A URL should be checked carefully before visiting it.
+
+Suspicious URL indicators may include:
+- Misspelled domain names
+- Unusual subdomains
+- Excessive URL length
+- Suspicious redirects
+- Unexpected URL shorteners
+- Use of HTTP instead of HTTPS for sensitive services
+
+HTTPS encrypts communication between a browser and a website, but HTTPS alone does not prove that a website is trustworthy.
+
+7. IP ADDRESS INTELLIGENCE
+An IP address identifies a network endpoint on the Internet.
+
+IP intelligence services may provide:
+- Approximate geographic information
+- Autonomous System Number (ASN)
+- Internet Service Provider or organization
+- Hosting information
+- Network ownership information
+- Reputation information
+
+IP geolocation is approximate and should not be treated as an exact physical address.
+
+8. DOMAIN INTELLIGENCE
+Domain investigation can include:
+- Domain registration information
+- DNS records
+- Nameservers
+- IP addresses
+- Certificate information
+- Domain age
+- Reputation indicators
+
+Domain information should be interpreted together with other security indicators.
+
+9. SSL/TLS CERTIFICATES
+TLS certificates help establish encrypted communication between a client and a website.
+
+Security checks can include:
+- Certificate validity
+- Expiration date
+- Issuer
+- Domain coverage
+- TLS configuration
+
+A valid certificate does not automatically mean that the website itself is legitimate.
+
+10. EMAIL PHISHING ANALYSIS
+Email analysis may examine:
+- Sender address
+- Reply-To address
+- Subject
+- Links
+- Attachments
+- Authentication results
+- Email headers
+- Suspicious language
+
+Email headers can provide information about mail delivery infrastructure and should be analyzed carefully.
+
+11. THREAT INTELLIGENCE
+Cyber threat intelligence is information about threats, indicators, attackers, vulnerabilities, and malicious infrastructure.
+
+Common indicators of compromise include:
+- IP addresses
+- Domains
+- URLs
+- File hashes
+- Email addresses
+- Malware names
+
+Threat intelligence should be verified using reliable sources before making security decisions.
+
+12. VULNERABILITIES AND CVEs
+A vulnerability is a weakness that can potentially be exploited.
+
+CVE stands for Common Vulnerabilities and Exposures. CVE identifiers provide standardized references for publicly known vulnerabilities.
+
+Vulnerability assessment should consider:
+- Affected software
+- Affected version
+- Severity
+- Exploitation status
+- Available patches
+- Environmental exposure
+
+13. INCIDENT RESPONSE
+Incident response is the process of detecting, investigating, containing, and recovering from security incidents.
+
+General stages include:
+1. Preparation
+2. Detection and analysis
+3. Containment
+4. Eradication
+5. Recovery
+6. Lessons learned
+
+During an incident, preserve relevant evidence and avoid unnecessary changes to affected systems.
+
+14. SOCIAL ENGINEERING
+Social engineering uses psychological manipulation to influence people into taking unsafe actions.
+
+Examples include:
+- Phishing
+- Pretexting
+- Impersonation
+- Baiting
+- Tailgating
+
+Security awareness and verification procedures can reduce social engineering risk.
+
+15. ZERO-DAY VULNERABILITIES
+A zero-day vulnerability is a previously unknown or unpatched security weakness for which effective remediation may not yet be widely available.
+
+Organizations should monitor trusted security advisories and apply mitigations or patches when available.
+
+16. SAFE CYBERSECURITY PRACTICES
+Recommended practices include:
+- Keep software updated
+- Use strong unique passwords
+- Enable MFA
+- Back up important data
+- Verify suspicious messages
+- Avoid unknown downloads
+- Use secure networks
+- Monitor account activity
+- Minimize administrator privileges
+- Educate users about common attacks
+
+17. CYBERSHIELD AI RESPONSE RULES
+CyberShield AI should provide defensive and educational cybersecurity guidance.
+
+The AI should:
+- Explain security concepts clearly
+- Identify potential risks
+- Recommend defensive actions
+- Explain uncertainty when information is incomplete
+- Avoid claiming that approximate IP geolocation is an exact location
+- Avoid claiming that a URL alone identifies a person's exact device or identity
+- Encourage users to verify important security findings
+- Support English and Roman Urdu explanations
+
+18. URL INVESTIGATION LIMITATIONS
+A URL by itself generally cannot reveal the exact identity, physical address, or exact device of the person who shared or visited it.
+
+Legitimate security analysis may examine publicly available information such as:
+- Domain information
+- DNS records
+- IP information associated with infrastructure
+- TLS certificates
+- Redirect behavior
+- Reputation indicators
+
+Exact visitor information normally requires appropriate server-side logs or other legitimately collected telemetry.

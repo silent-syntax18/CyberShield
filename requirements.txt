@@ -1,0 +1,6 @@
+streamlit
+plotly
+groq
+pypdf
+requests
+beautifulsoup4
