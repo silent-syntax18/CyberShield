@@ -1,11 +1,14 @@
 import os
 import re
 import math
+from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
-DOCUMENT_PATH = "rag/documents/cybersecurity_basics.txt"
+# Yeh line khud-ba-khud file ka sahi path nikal le gi (Streamlit Cloud ke liye)
+BASE_DIR = Path(__file__).resolve().parent
+DOCUMENT_PATH = BASE_DIR / "documents" / "cybersecurity_basics.txt"
 
 
 def load_knowledge():
