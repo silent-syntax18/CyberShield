@@ -1,9 +1,6 @@
-import sys
-import os
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import streamlit as st
 import plotly.graph_objects as go
+import time
 
 from ai.ai_engine import ask_cybershield
 from modules.url_scanner import analyze_url
@@ -13,11 +10,11 @@ from modules.pdf_qa import extract_pdf_text, search_pdf_text
 
 
 # ============================================================
-# PAGE CONFIGURATION
+# PAGE CONFIG
 # ============================================================
 
 st.set_page_config(
-    page_title="CyberShield 2026",
+    page_title="CyberShield",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -25,72 +22,154 @@ st.set_page_config(
 
 
 # ============================================================
-# CUSTOM CSS
-# ============================================================
+# FUTURISTIC CYBERPUNK CSS
+# This CSS styles the native Streamlit widgets; the Dashboard itself avoids
+# HTML <div> blocks so raw HTML cannot appear in the UI.
 
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap');
+
+:root {
+    --cyber-bg: #06182b;
+    --cyber-panel: #0b2340;
+    --cyber-panel-2: #0e2c4d;
+    --cyber-border: rgba(25, 217, 255, 0.34);
+    --cyber-text: #effcff;
+    --cyber-muted: #9cc4d9;
+    --cyber-cyan: #19d9ff;
+    --cyber-blue: #3d7cff;
+    --cyber-purple: #765cff;
+    --cyber-green: #45f0b0;
+}
+
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
 .stApp {
-    background: #07111f;
-    color: #e8f1ff;
+    background:
+        radial-gradient(circle at 8% 0%, rgba(25,217,255,.22), transparent 27%),
+        radial-gradient(circle at 92% 8%, rgba(61,124,255,.20), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(118,92,255,.12), transparent 35%),
+        linear-gradient(135deg, #041321 0%, #082642 48%, #06182b 100%);
+    color: var(--cyber-text);
 }
 
-[data-testid="stSidebar"] {
-    background: #0b1728;
-}
+[data-testid="stHeader"] { background: rgba(4, 16, 30, .72); }
 
-.main-title {
-    font-size: 42px;
-    font-weight: 800;
-    margin-bottom: 5px;
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #06182c 0%, #092743 52%, #06182c 100%);
+    border-right: 1px solid rgba(25,217,255,.34);
+    box-shadow: 8px 0 35px rgba(0,0,0,.22);
 }
+section[data-testid="stSidebar"] * { color: #e7f9ff; }
 
-.subtitle {
-    color: #8fa8c7;
-    font-size: 17px;
+.sidebar-title { font-family:'Orbitron',sans-serif; font-size:23px; font-weight:800; letter-spacing:1.5px; text-align:center; color:#eafcff; }
+.sidebar-subtitle { text-align:center; color:#8fb8cf; font-size:10px; margin:3px 0 15px; letter-spacing:.5px; }
+.sidebar-online { text-align:center; border:1px solid rgba(69,240,176,.38); background:rgba(69,240,176,.09); color:#63f5bd; border-radius:999px; padding:7px; font-size:11px; font-weight:700; margin-bottom:16px; box-shadow:0 0 18px rgba(69,240,176,.08); }
+
+h1,h2,h3 { color:#f2fcff !important; text-shadow:0 0 18px rgba(25,217,255,.10); }
+
+.hero-card {
+    padding:30px; border-radius:26px; border:1px solid rgba(25,217,255,.48);
+    background:linear-gradient(135deg, rgba(10,39,68,.96), rgba(7,25,47,.94));
+    box-shadow:0 0 32px rgba(25,217,255,.09), 0 22px 70px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.06);
 }
+.hero-kicker { color:#5ff4c0; font-size:11px; font-weight:800; letter-spacing:1.4px; }
+.hero-title { font-family:'Orbitron',sans-serif; font-size:37px; font-weight:800; margin-top:12px; color:#f4fdff; }
+.hero-title span { color:#19d9ff; text-shadow:0 0 10px rgba(25,217,255,.65), 0 0 28px rgba(25,217,255,.28); }
+.hero-subtitle { color:#a4c7da; font-size:14px; max-width:760px; margin-top:9px; line-height:1.6; }
 
-.card {
-    background: #0d1b2e;
-    border: 1px solid #1d3553;
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 15px;
-}
+.panel { padding:22px; border-radius:21px; border:1px solid rgba(25,217,255,.28); background:linear-gradient(145deg, rgba(12,42,70,.92), rgba(7,28,50,.94)); box-shadow:0 0 24px rgba(25,217,255,.055), 0 16px 40px rgba(0,0,0,.22); }
+.panel-title { color:#eafaff; font-size:16px; font-weight:800; }
+.panel-text { color:#9bc0d5; font-size:12px; line-height:1.6; }
+.score-big { font-family:'Orbitron',sans-serif; font-size:43px; font-weight:800; color:#45f0b0; text-shadow:0 0 24px rgba(69,240,176,.28); }
+.score-label { color:#8fb7ce; font-size:10px; letter-spacing:1.3px; font-weight:800; }
 
+.metric-card,.module-card,.activity-row { border:1px solid rgba(25,217,255,.22); background:linear-gradient(145deg, rgba(12,43,72,.92), rgba(7,27,49,.94)); box-shadow:0 0 20px rgba(25,217,255,.04); }
+.metric-card { padding:18px; border-radius:17px; min-height:90px; }
+.metric-value { font-family:'Orbitron',sans-serif; font-size:24px; font-weight:800; color:#e8fbff; text-shadow:0 0 12px rgba(25,217,255,.18); }
+.metric-label { color:#8fb7ce; font-size:11px; margin-top:4px; }
+.module-card { padding:18px; border-radius:19px; min-height:145px; }
+.module-icon { font-size:29px; filter:drop-shadow(0 0 7px rgba(25,217,255,.25)); }
+.module-title { color:#eafaff; font-size:15px; font-weight:800; margin-top:7px; }
+.module-description { color:#91b6ca; font-size:11px; margin-top:5px; line-height:1.5; }
+.activity-row { padding:12px 15px; border-radius:13px; margin-bottom:7px; color:#b4cfdd; font-size:12px; }
+
+.stButton > button { border-radius:12px !important; border:1px solid rgba(25,217,255,.30) !important; background:linear-gradient(135deg,#0d3559,#092642) !important; color:#e6fbff !important; font-weight:700 !important; min-height:43px; transition:all .18s ease; }
+.stButton > button:hover { border-color:#19d9ff !important; color:#19d9ff !important; box-shadow:0 0 25px rgba(25,217,255,.22) !important; transform:translateY(-1px); }
+.scan-button > button { background:linear-gradient(135deg,#0bcff5,#3d7cff) !important; border:none !important; color:white !important; min-height:54px !important; font-size:15px !important; box-shadow:0 0 28px rgba(25,217,255,.24) !important; }
+
+.stTextInput input,.stTextArea textarea { background:#09243e !important; color:#effcff !important; border:1px solid rgba(25,217,255,.30) !important; border-radius:11px !important; }
+.stTextInput input:focus,.stTextArea textarea:focus { border-color:#19d9ff !important; box-shadow:0 0 18px rgba(25,217,255,.14) !important; }
+.stSelectbox div[data-baseweb="select"] > div { background:#09243e !important; border-color:rgba(25,217,255,.30) !important; border-radius:11px !important; }
+[data-testid="stMetric"] { background:rgba(9,36,62,.80); border:1px solid rgba(25,217,255,.22); padding:12px; border-radius:14px; }
+[data-testid="stProgressBar"] > div > div > div { background:linear-gradient(90deg,#19d9ff,#3d7cff,#765cff,#45f0b0); box-shadow:0 0 12px rgba(25,217,255,.35); }
+hr { border-color:rgba(25,217,255,.16) !important; }
+footer { visibility:hidden; }
 </style>
 """, unsafe_allow_html=True)
+
+
+# ============================================================
+# SESSION STATE
+# ============================================================
+
+# SESSION STATE
+# ============================================================
+
+if "page" not in st.session_state:
+    st.session_state.page = "🏠 Dashboard"
+
+if "security_score" not in st.session_state:
+    st.session_state.security_score = 87
+
+if "scan_history" not in st.session_state:
+    st.session_state.scan_history = [
+        ("URL Scanner", "example.com", "Low"),
+        ("Password Security", "Password check", "Strong"),
+        ("IP Intelligence", "example.com", "Analyzed"),
+    ]
 
 
 # ============================================================
 # SIDEBAR
 # ============================================================
 
-st.sidebar.title("🛡️ CyberShield 2026")
-st.sidebar.caption("AI-Powered Cybersecurity Platform")
+st.sidebar.markdown(
+    "🛡️",
+    help="CyberShield"
+)
+st.sidebar.markdown("### CyberShield")
+st.sidebar.caption("Interactive Cybersecurity Center")
+st.sidebar.markdown("🟢 **SYSTEM ONLINE**")
 
-page = st.sidebar.radio(
-    "Security Modules",
-    [
-        "🏠 Dashboard",
-        "🤖 AI Assistant",
-        "🔗 URL Scanner",
-        "📄 PDF Q&A",
-        "📧 Phishing Analyzer",
-        "🔐 Password Security",
-        "🌐 IP & Domain Intelligence",
-        "🦠 Threat Intelligence",
-        "📱 Phone Number Intelligence",
-        "🛡️ Vulnerability Center",
-        "🚨 Incident Response",
-        "📚 Cyber Academy",
-        "📊 Security Reports"
-    ]
+pages = [
+    "🏠 Dashboard",
+    "🤖 AI Assistant",
+    "🔗 URL Scanner",
+    "📧 Phishing Analyzer",
+    "🔐 Password Security",
+    "🌐 IP & Domain Intelligence",
+    "🛡️ Threat Intelligence",
+    "📄 PDF Q&A",
+    "📱 Phone Intelligence",
+    "🛠️ Vulnerability Center",
+    "🚨 Incident Response",
+    "📚 Cyber Academy",
+    "📊 Security Reports",
+    "🦠 Virus Scanner",
+    "📡 Network Security",
+]
+
+selected_page = st.sidebar.radio(
+    "Navigation",
+    pages,
+    index=pages.index(st.session_state.page)
 )
 
-st.sidebar.markdown("---")
-st.sidebar.info("CyberShield AI • RAG • Threat Analysis")
+st.session_state.page = selected_page
+
+page = st.session_state.page
 
 
 # ============================================================
@@ -99,93 +178,193 @@ st.sidebar.info("CyberShield AI • RAG • Threat Analysis")
 
 if page == "🏠 Dashboard":
 
-    st.markdown(
-        '<div class="main-title">🛡️ CyberShield 2026</div>',
-        unsafe_allow_html=True
-    )
+    # ========================================================
+    # CYBERSHIELD COMMAND CENTER
+    # ========================================================
 
-    st.markdown(
-        '<div class="subtitle">AI-powered cybersecurity monitoring and threat analysis platform</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown("---")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        st.metric("Security Score", "87%")
-
-    with col2:
-        st.metric("Threats Detected", "24")
-
-    with col3:
-        st.metric("URLs Scanned", "156")
-
-    with col4:
-        st.metric("System Status", "Protected")
-
-    st.markdown("---")
-
-    left, right = st.columns(2)
-
-    with left:
-
-        st.markdown("### 📊 Risk Distribution")
-
-        fig = go.Figure(
-            data=[
-                go.Pie(
-                    labels=["Low", "Medium", "High"],
-                    values=[65, 25, 10],
-                    hole=0.55
-                )
-            ]
-        )
-
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="white")
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-
-    with right:
-
-        st.markdown("### 📈 Threat Activity")
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Scatter(
-                x=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-                y=[4, 7, 5, 10, 8, 13, 9],
-                mode="lines+markers",
-                name="Threats"
-            )
-        )
-
-        fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            font=dict(color="white")
-        )
-
-        st.plotly_chart(fig, use_container_width=True)
-
-    st.markdown(
-        """
-        <div class="card">
-        <h3>🔐 CyberShield Protection Engine</h3>
-        <p>
-        Monitor suspicious URLs, analyze phishing attempts,
-        investigate domains and IP addresses, and use AI-powered
-        cybersecurity guidance.
-        </p>
+    st.markdown("""
+    <div class="hero-card">
+        <div class="hero-kicker">● SYSTEM STATUS: PROTECTED</div>
+        <div class="hero-title">🛡️ Welcome to <span>CyberShield</span></div>
+        <div class="hero-subtitle">
+            Your interactive cybersecurity command center —
+            scan, investigate, learn and strengthen your digital security.
         </div>
-        """,
-        unsafe_allow_html=True
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")
+
+    # SCORE + QUICK SCAN
+    score_col, action_col = st.columns([1, 2])
+
+    with score_col:
+        st.markdown("""
+        <div class="panel">
+            <div class="score-label">OVERALL SECURITY SCORE</div>
+            <div class="score-big">87%</div>
+            <div class="panel-title">Good Security Health</div>
+            <div class="panel-text">
+                Your current dashboard score is healthy. Keep monitoring
+                important accounts, links and devices.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.progress(0.87)
+
+    with action_col:
+        st.markdown("""
+        <div class="panel">
+            <div class="panel-title">⚡ Quick Security Scan</div>
+            <div class="panel-text">
+                Run CyberShield's available checks and review your
+                current security posture.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.write("")
+
+        scan_slot = st.empty()
+
+        with scan_slot.container():
+            if st.button(
+                "🛡️  RUN SECURITY CHECK",
+                key="dashboard_scan",
+                use_container_width=True
+            ):
+                progress = st.progress(0)
+                status = st.empty()
+
+                stages = [
+                    ("Initializing CyberShield...", 15),
+                    ("Scanning security signals...", 35),
+                    ("Checking SSL & network security...", 55),
+                    ("Analyzing threat indicators...", 80),
+                    ("Security check complete.", 100),
+                ]
+
+                for message, value in stages:
+                    status.info(message)
+                    progress.progress(value)
+                    time.sleep(0.30)
+
+                status.success("✓ Security check completed successfully.")
+
+    st.write("")
+    st.markdown("### 📊 Security Overview")
+
+    m1, m2, m3, m4 = st.columns(4)
+
+    metric_data = [
+        ("87%", "Security Score"),
+        ("12", "Scans Completed"),
+        ("0", "Critical Threats"),
+        ("14", "Modules Available"),
+    ]
+
+    for col, (value, label) in zip((m1, m2, m3, m4), metric_data):
+        with col:
+            st.markdown(
+                f"""
+                <div class="metric-card">
+                    <div class="metric-value">{value}</div>
+                    <div class="metric-label">{label}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+    st.write("")
+    st.markdown("### 🚀 Security Command Modules")
+    st.caption("Choose a module to jump directly into a focused security workflow.")
+
+    module_data = [
+        ("🔗", "URL Scan", "Check a website or suspicious link", "🔗 URL Scanner"),
+        ("🌐", "Domain Intel", "Explore DNS, SSL, ISP and ASN", "🌐 IP & Domain Intelligence"),
+        ("🤖", "Cyber AI", "Get defensive cybersecurity guidance", "🤖 AI Assistant"),
+        ("🔐", "Password", "Check password strength locally", "🔐 Password Security"),
+        ("📄", "PDF Q&A", "Ask questions about a cybersecurity PDF", "📄 PDF Q&A"),
+        ("🦠", "Virus Scan", "Run available device security checks", "🦠 Virus Scanner"),
+    ]
+
+    cols = st.columns(3)
+
+    for i, (icon, title, description, target_page) in enumerate(module_data):
+        with cols[i % 3]:
+            st.markdown(
+                f"""
+                <div class="module-card">
+                    <div class="module-icon">{icon}</div>
+                    <div class="module-title">{title}</div>
+                    <div class="module-description">{description}</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            if st.button(
+                f"Open {title}  →",
+                key=f"dashboard_module_{i}",
+                use_container_width=True
+            ):
+                st.session_state.page = target_page
+                st.rerun()
+
+    st.write("")
+    st.markdown("### 📈 Security Activity")
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            y=[52, 61, 58, 72, 68, 81, 87],
+            mode="lines+markers",
+            name="Security Score",
+            line=dict(width=4),
+            fill="tozeroy"
+        )
+    )
+
+    fig.update_layout(
+        height=300,
+        margin=dict(l=10, r=10, t=10, b=10),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(11,16,34,0.72)",
+        xaxis=dict(showgrid=False, color="#7890a7"),
+        yaxis=dict(
+            showgrid=True,
+            gridcolor="rgba(53,217,255,0.08)",
+            range=[0, 100],
+            color="#7890a7"
+        ),
+        showlegend=False
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("### 🔔 Recent Security Activity")
+
+    if st.session_state.scan_history:
+        for module_name, target, result in st.session_state.scan_history:
+            st.markdown(
+                f"""
+                <div class="activity-row">
+                    🛡️ <strong>{module_name}</strong>
+                    &nbsp;•&nbsp; {target}
+                    &nbsp;•&nbsp; <strong>{result}</strong>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+    else:
+        st.info("No recent security activity.")
+
+    st.caption(
+        "Privacy: CyberShield's network-level modules do not identify an exact person, "
+        "device owner or physical address."
     )
 
 
@@ -193,52 +372,26 @@ if page == "🏠 Dashboard":
 # AI ASSISTANT
 # ============================================================
 
-elif page == "🤖 AI Assistant":
+
 
     st.title("🤖 CyberShield AI Assistant")
-
-    st.write(
-        "Ask cybersecurity questions and get AI-powered answers "
-        "using the CyberShield knowledge base."
-    )
-
-    language = st.selectbox(
-        "Response Language",
-        ["English", "Roman Urdu"]
-    )
+    st.caption("Ask defensive cybersecurity questions.")
 
     question = st.text_area(
-        "Enter your cybersecurity question",
-        placeholder="Example: How can I identify a phishing email?"
+        "What would you like to ask?",
+        placeholder="Example: How can I protect myself from phishing?"
     )
 
-    if st.button("🚀 Ask CyberShield AI", use_container_width=True):
+    if st.button("Ask CyberShield AI", use_container_width=True):
 
         if not question.strip():
-
             st.warning("Please enter a question.")
-
         else:
-
             with st.spinner("CyberShield AI is analyzing..."):
+                answer = ask_cybershield(question)
 
-                try:
-
-                    answer = ask_cybershield(
-                        question,
-                        language=language
-                    )
-
-                    st.markdown("### 🧠 AI Response")
-
-                    st.markdown(
-                        f'<div class="card">{answer}</div>',
-                        unsafe_allow_html=True
-                    )
-
-                except Exception as e:
-
-                    st.error(f"AI Error: {e}")
+            st.markdown("### 🧠 AI Response")
+            st.write(answer)
 
 
 # ============================================================
@@ -247,11 +400,8 @@ elif page == "🤖 AI Assistant":
 
 elif page == "🔗 URL Scanner":
 
-    st.title("🔗 CyberShield URL Scanner")
-
-    st.write(
-        "Perform a safe, non-invasive security analysis of a URL."
-    )
+    st.title("🔗 URL Security Scanner")
+    st.caption("Analyze a website URL for common security indicators.")
 
     url = st.text_input(
         "Enter URL",
@@ -261,233 +411,46 @@ elif page == "🔗 URL Scanner":
     if st.button("🔍 Scan URL", use_container_width=True):
 
         if not url.strip():
-
             st.warning("Please enter a URL.")
-
         else:
 
-            with st.spinner("Analyzing URL..."):
+            with st.spinner("Scanning URL..."):
+                result = analyze_url(url)
 
-                try:
-
-                    result = analyze_url(url)
-
-                    st.markdown("### 🔎 Scan Results")
-
-                    col1, col2, col3 = st.columns(3)
-
-                    with col1:
-                        st.metric(
-                            "Risk Score",
-                            f"{result['risk_score']}/100"
-                        )
-
-                    with col2:
-                        st.metric(
-                            "Risk Level",
-                            result["risk_level"]
-                        )
-
-                    with col3:
-                        st.metric(
-                            "HTTPS",
-                            "Enabled" if result["https"]
-                            else "Not Enabled"
-                        )
-
-                    st.markdown("---")
-
-                    st.write(
-                        "**Domain:**",
-                        result["domain"]
-                    )
-
-                    st.write(
-                        "**Resolved IP:**",
-                        result["ip_address"]
-                    )
-
-                    st.write(
-                        "**Valid URL:**",
-                        "Yes" if result["valid_url"] else "No"
-                    )
-
-                    st.markdown("### ⚠️ Security Indicators")
-
-                    if result["indicators"]:
-
-                        for indicator in result["indicators"]:
-
-                            st.warning(
-                                "⚠️ " + indicator
-                            )
-
-                    else:
-
-                        st.success(
-                            "✅ No suspicious indicators were "
-                            "detected by the current URL rules."
-                        )
-
-                    st.info(
-                        "A URL alone cannot determine a person's "
-                        "exact identity, physical location, or exact device."
-                    )
-
-                except Exception as e:
-
-                    st.error(
-                        f"Scanner Error: {e}"
-                    )
-
-
-# ============================================================
-# PHISHING ANALYZER
-# ============================================================
-
-elif page == "📧 Phishing Analyzer":
-
-    st.title("📧 Phishing Email Analyzer")
-
-    st.write(
-        "Paste an email or message to analyze possible phishing indicators."
-    )
-
-    email_text = st.text_area(
-        "Email / Message",
-        height=250,
-        placeholder="Paste suspicious email text here..."
-    )
-
-    if st.button(
-        "🕵️ Analyze Message",
-        use_container_width=True
-    ):
-
-        if not email_text.strip():
-
-            st.warning(
-                "Please paste an email or message."
-            )
-
-        else:
-
-            with st.spinner(
-                "Analyzing phishing indicators..."
-            ):
-
-                try:
-
-                    prompt = f"""
-Analyze the following email/message for phishing indicators.
-
-Identify:
-- suspicious language
-- urgency or pressure
-- fake login requests
-- suspicious links
-- credential requests
-- social engineering indicators
-- recommended safe actions
-
-Email/message:
-
-{email_text}
-"""
-
-                    answer = ask_cybershield(
-                        prompt
-                    )
-
-                    st.markdown(
-                        "### 🧠 CyberShield Analysis"
-                    )
-
-                    st.markdown(
-                        f'<div class="card">{answer}</div>',
-                        unsafe_allow_html=True
-                    )
-
-                except Exception as e:
-
-                    st.error(
-                        f"Analyzer Error: {e}"
-                    )
-
-
-# ============================================================
-# PASSWORD SECURITY
-# ============================================================
-
-elif page == "🔐 Password Security":
-
-    st.title("🔐 Password Security Checker")
-
-    password = st.text_input(
-        "Enter a password to check",
-        type="password"
-    )
-
-    if st.button(
-        "🔎 Check Password",
-        use_container_width=True
-    ):
-
-        if not password:
-
-            st.warning(
-                "Please enter a password."
-            )
-
-        else:
-
-            score = 0
-
-            if len(password) >= 8:
-                score += 25
-
-            if len(password) >= 12:
-                score += 25
-
-            if any(c.isupper() for c in password):
-                score += 15
-
-            if any(c.islower() for c in password):
-                score += 15
-
-            if any(c.isdigit() for c in password):
-                score += 10
-
-            if any(not c.isalnum() for c in password):
-                score += 10
-
-            st.metric(
-                "Password Strength Score",
-                f"{score}/100"
-            )
-
-            if score >= 80:
-
-                st.success(
-                    "🟢 Strong password"
-                )
-
-            elif score >= 50:
-
-                st.warning(
-                    "🟡 Moderate password"
-                )
-
+            if not result.get("valid_url"):
+                st.error("Invalid URL.")
             else:
 
-                st.error(
-                    "🔴 Weak password"
-                )
+                score = result.get("risk_score", 0)
+                level = result.get("risk_level", "Unknown")
 
-            st.info(
-                "Use unique passwords for important accounts "
-                "and enable multi-factor authentication."
-            )
+                st.subheader("Security Result")
+
+                c1, c2, c3 = st.columns(3)
+
+                with c1:
+                    st.metric("Risk Score", f"{score}/100")
+
+                with c2:
+                    st.metric("Risk Level", level)
+
+                with c3:
+                    st.metric(
+                        "HTTPS",
+                        "Enabled" if result.get("https") else "Not Enabled"
+                    )
+
+                st.write("**Domain:**", result.get("domain"))
+                st.write("**IP Address:**", result.get("ip_address"))
+
+                indicators = result.get("indicators", [])
+
+                if indicators:
+                    st.warning("Security Indicators")
+                    for indicator in indicators:
+                        st.write("•", indicator)
+                else:
+                    st.success("No common suspicious indicators detected.")
 
 
 # ============================================================
@@ -497,1191 +460,177 @@ elif page == "🔐 Password Security":
 elif page == "🌐 IP & Domain Intelligence":
 
     st.title("🌐 IP & Domain Intelligence")
-
-    st.write(
-        "Investigate publicly available information about "
-        "an IP address or domain."
+    st.caption(
+        "DNS, SSL, ISP, ASN and approximate network-level information."
     )
 
     target = st.text_input(
         "Enter IP address or domain",
-        placeholder="example.com or 8.8.8.8"
+        placeholder="example.com"
     )
 
-    if st.button(
-        "🔎 Investigate",
-        use_container_width=True
-    ):
+    if st.button("🌐 Analyze Target", use_container_width=True):
 
         if not target.strip():
-
-            st.warning(
-                "Please enter an IP address or domain."
-            )
-
+            st.warning("Please enter a target.")
         else:
 
-            with st.spinner(
-                "Collecting public intelligence..."
-            ):
+            with st.spinner("Collecting network intelligence..."):
+                result = analyze_target(target)
 
-                try:
+            if result:
 
-                    result = analyze_target(target)
+                c1, c2, c3 = st.columns(3)
 
-                    # ----------------------------------------
-                    # BASIC INFORMATION
-                    # ----------------------------------------
-
-                    st.markdown("### 🎯 Target Information")
-
-                    col1, col2, col3 = st.columns(3)
-
-                    with col1:
-                        st.metric(
-                            "Target Type",
-                            result["type"]
-                        )
-
-                    with col2:
-                        st.metric(
-                            "IP Address",
-                            result["ip_address"]
-                            or "Unavailable"
-                        )
-
-                    with col3:
-
-                        if result["ssl"].get("https"):
-                            ssl_status = "Enabled"
-                        else:
-                            ssl_status = "Unavailable"
-
-                        st.metric(
-                            "HTTPS / SSL",
-                            ssl_status
-                        )
-
-                    st.markdown("---")
-
-                    # ----------------------------------------
-                    # DOMAIN
-                    # ----------------------------------------
-
-                    if result["domain"]:
-
-                        st.markdown("### 🌐 Domain")
-
-                        st.write(
-                            result["domain"]
-                        )
-
-                    # ----------------------------------------
-                    # DNS INFORMATION
-                    # ----------------------------------------
-
-                    st.markdown("### 🔎 DNS Information")
-
-                    dns = result.get("dns", {})
-
-                    if dns:
-
-                        st.write(
-                            "**Hostname:**",
-                            dns.get(
-                                "hostname",
-                                "Unavailable"
-                            )
-                        )
-
-                        aliases = dns.get(
-                            "aliases",
-                            []
-                        )
-
-                        addresses = dns.get(
-                            "ip_address",
-                            []
-                        )
-
-                        st.write(
-                            "**Aliases:**",
-                            ", ".join(aliases)
-                            if aliases
-                            else "None"
-                        )
-
-                        st.write(
-                            "**Resolved Addresses:**",
-                            ", ".join(addresses)
-                            if addresses
-                            else "Unavailable"
-                        )
-
-                    else:
-
-                        st.info(
-                            "DNS information is unavailable."
-                        )
-
-                    # ----------------------------------------
-                    # SSL INFORMATION
-                    # ----------------------------------------
-
-                    st.markdown("### 🔐 HTTPS / SSL Information")
-
-                    ssl_info = result.get(
-                        "ssl",
-                        {}
+                with c1:
+                    st.metric(
+                        "Target Type",
+                        result.get("target_type", "Unknown")
                     )
 
-                    if ssl_info.get("https"):
-
-                        st.success(
-                            "✅ HTTPS connection is available."
-                        )
-
-                        st.write(
-                            "**Certificate Issuer:**",
-                            ssl_info.get(
-                                "issuer",
-                                "Unavailable"
-                            )
-                        )
-
-                        st.write(
-                            "**Certificate Subject:**",
-                            ssl_info.get(
-                                "subject",
-                                "Unavailable"
-                            )
-                        )
-
-                    else:
-
-                        st.warning(
-                            "⚠️ HTTPS/SSL information could not "
-                            "be retrieved."
-                        )
-                    # ----------------------------------------
-                    # NETWORK INTELLIGENCE
-                    # ----------------------------------------
-
-                    st.markdown("### 🌐 Network Intelligence")
-
-                    intelligence = result.get(
-                        "intelligence",
-                        {}
+                with c2:
+                    st.metric(
+                        "IP Address",
+                        result.get("ip_address", "Unknown")
                     )
 
-                    col1, col2, col3 = st.columns(3)
-
-                    with col1:
-                        st.write(
-                            "**ISP:**",
-                            intelligence.get(
-                                "isp",
-                                "Unavailable"
-                            )
-                        )
-
-                        st.write(
-                            "**ASN:**",
-                            intelligence.get(
-                                "asn",
-                                "Unavailable"
-                            )
-                        )
-
-                    with col2:
-                        st.write(
-                            "**Organization / Hosting:**",
-                            intelligence.get(
-                                "organization",
-                                "Unavailable"
-                            )
-                        )
-
-                        st.write(
-                            "**Country:**",
-                            intelligence.get(
-                                "country",
-                                "Unavailable"
-                            )
-                        )
-
-                    with col3:
-                        st.write(
-                            "**Region:**",
-                            intelligence.get(
-                                "region",
-                                "Unavailable"
-                            )
-                        )
-
-                        st.write(
-                            "**City (Approx.):**",
-                            intelligence.get(
-                                "city",
-                                "Unavailable"
-                            )
-                        )
-
-                    st.markdown("#### 📍 Approximate Location")
-
-                    lat = intelligence.get(
-                        "latitude",
-                        "Unavailable"
+                with c3:
+                    st.metric(
+                        "HTTPS / SSL",
+                        "Enabled" if result.get("https") else "Not Available"
                     )
 
-                    lon = intelligence.get(
-                        "longitude",
-                        "Unavailable"
+                st.markdown("### 🌐 Network Intelligence")
+
+                n1, n2, n3 = st.columns(3)
+
+                with n1:
+                    st.markdown(
+                        f"**ISP**  \n{result.get('isp', 'Unknown')}"
                     )
 
-                    st.write(
-                        f"**Coordinates:** {lat}, {lon}"
+                with n2:
+                    st.markdown(
+                        f"**ASN**  \n{result.get('asn', 'Unknown')}"
                     )
 
-                    st.write(
-                        "**Timezone:**",
-                        intelligence.get(
-                            "timezone",
-                            "Unavailable"
-                        )
+                with n3:
+                    st.markdown(
+                        f"**Organization**  \n{result.get('organization', 'Unknown')}"
                     )
 
-                    st.caption(
-                        "Location shown here is approximate IP/network "
-                        "geolocation and may represent the ISP, hosting "
-                        "provider, CDN, or network endpoint rather than "
-                        "the user's physical location."
-                    )
-
-                    # ----------------------------------------
-                    # NOTES
-                    # ----------------------------------------
-
-                    st.markdown("### 📝 Intelligence Notes")
-
-                    notes = result.get(
-                        "notes",
-                        []
-                    )
-
-                    if notes:
-
-                        for note in notes:
-
-                            st.info(
-                                "ℹ️ " + note
-                            )
-
-                    # ----------------------------------------
-                    # PRIVACY LIMITATION
-                    # ----------------------------------------
-
-                    st.markdown("---")
-
-                    st.info(
-                        "🔒 Privacy limitation: IP and domain "
-                        "intelligence provides network-level and "
-                        "publicly available information. It does "
-                        "not identify a person's exact home address, "
-                        "exact physical location, or exact identity."
-                    )
-
-                except Exception as e:
-
-                    st.error(
-                        f"Intelligence Error: {e}"
-                    )
-
-# ============================================================
-# THREAT INTELLIGENCE
-# ============================================================
-
-elif page == "🦠 Threat Intelligence":
-
-    st.title("🦠 Threat Intelligence")
-
-    st.write(
-        "Analyze publicly available security indicators "
-        "and identify common threat patterns."
-    )
-
-    # --------------------------------------------------------
-    # THREAT INDICATOR INPUT
-    # --------------------------------------------------------
-
-    st.markdown("### 🔎 Threat Indicator Scanner")
-
-    indicator = st.text_input(
-        "Enter IP address, domain or URL",
-        placeholder="example.com or 8.8.8.8"
-    )
-
-    if st.button(
-        "🚨 Analyze Threat",
-        use_container_width=True
-    ):
-
-        if not indicator.strip():
-
-            st.warning(
-                "Please enter an IP address, domain or URL."
-            )
-
-        else:
-
-            target = indicator.strip().lower()
-
-            # ------------------------------------------------
-            # BASIC THREAT ANALYSIS
-            # ------------------------------------------------
-
-            risk_score = 0
-            indicators = []
-
-            # Suspicious keywords
-            suspicious_words = [
-                "login",
-                "verify",
-                "account",
-                "password",
-                "secure",
-                "update",
-                "confirm",
-                "bank",
-                "wallet",
-                "free"
-            ]
-
-            for word in suspicious_words:
-
-                if word in target:
-
-                    risk_score += 10
-
-                    indicators.append(
-                        f"Suspicious keyword detected: {word}"
-                    )
-
-            # HTTP instead of HTTPS
-            if target.startswith("http://"):
-
-                risk_score += 20
-
-                indicators.append(
-                    "Connection uses HTTP instead of HTTPS."
-                )
-
-            # IP address indicator
-            try:
-
-                import ipaddress
-
-                ipaddress.ip_address(target)
-
-                indicators.append(
-                    "Input is a direct IP address."
-                )
-
-            except ValueError:
-
-                pass
-
-            # Long suspicious-looking URL
-            if len(target) > 80:
-
-                risk_score += 10
-
-                indicators.append(
-                    "Unusually long URL or indicator."
-                )
-
-            # Final score limit
-            risk_score = min(
-                risk_score,
-                100
-            )
-
-            # ------------------------------------------------
-            # RISK LEVEL
-            # ------------------------------------------------
-
-            if risk_score >= 60:
-
-                risk_level = "High"
-                risk_icon = "🔴"
-
-            elif risk_score >= 30:
-
-                risk_level = "Medium"
-                risk_icon = "🟠"
-
-            else:
-
-                risk_level = "Low"
-                risk_icon = "🟢"
-
-            # ------------------------------------------------
-            # RESULT
-            # ------------------------------------------------
-
-            st.markdown("---")
-
-            st.markdown("### 🛡️ Threat Analysis Result")
-
-            col1, col2, col3 = st.columns(3)
-
-            with col1:
-
-                st.metric(
-                    "Threat Score",
-                    f"{risk_score}/100"
-                )
-
-            with col2:
-
-                st.metric(
-                    "Risk Level",
-                    f"{risk_icon} {risk_level}"
-                )
-
-            with col3:
-
-                st.metric(
-                    "Indicators",
-                    len(indicators)
-                )
-
-            # ------------------------------------------------
-            # VISUAL RISK BAR
-            # ------------------------------------------------
-
-            st.markdown("### 📊 Risk Level")
-
-            st.progress(
-                risk_score / 100
-            )
-
-            if risk_level == "High":
-
-                st.error(
-                    "🔴 High-risk indicators detected. "
-                    "Further investigation is recommended."
-                )
-
-            elif risk_level == "Medium":
-
-                st.warning(
-                    "🟠 Medium-risk indicators detected. "
-                    "Review the identified patterns carefully."
-                )
-
-            else:
-
-                st.success(
-                    "🟢 No major suspicious patterns detected "
-                    "by this basic analysis."
-                )
-
-            # ------------------------------------------------
-            # DETECTED INDICATORS
-            # ------------------------------------------------
-
-            st.markdown("### 🚨 Detected Indicators")
-
-            if indicators:
-
-                for item in indicators:
-
-                    st.write(
-                        "⚠️",
-                        item
-                    )
-
-            else:
+                st.markdown("### 🔎 DNS Information")
+                st.write(result.get("dns_addresses", []))
+
+                st.markdown("### 🔐 SSL Information")
+                st.write(result.get("ssl_issuer", "Not available"))
 
                 st.info(
-                    "No suspicious indicators were detected."
+                    "Privacy note: IP/domain intelligence provides "
+                    "network-level information. It cannot identify a "
+                    "person's exact identity, device or physical address."
                 )
 
-            # ------------------------------------------------
-            # THREAT CATEGORIES
-            # ------------------------------------------------
 
-            st.markdown("### 🧩 Threat Categories")
-
-            category_data = {
-
-                "Category": [
-                    "Phishing",
-                    "Malware",
-                    "Ransomware",
-                    "Credential Theft",
-                    "Suspicious URLs"
-                ],
-
-                "Threat Activity": [
-                    42,
-                    31,
-                    12,
-                    25,
-                    56
-                ]
-            }
-
-            st.dataframe(
-                category_data,
-                use_container_width=True,
-                hide_index=True
-            )
-
-            # ------------------------------------------------
-            # PRIVACY LIMITATION
-            # ------------------------------------------------
-
-            st.markdown("---")
-
-            st.info(
-                "🔒 Privacy limitation: This module performs "
-                "basic indicator analysis using publicly available "
-                "patterns. It does not identify a person's exact "
-                "identity, device or physical location."
-            )
 # ============================================================
-# PHONE NUMBER INTELLIGENCE
+# PASSWORD SECURITY
 # ============================================================
 
-elif page == "📱 Phone Number Intelligence":
+elif page == "🔐 Password Security":
 
-    st.title("📱 Phone Number Intelligence")
+    st.title("🔐 Password Security")
+    st.caption("Check password strength locally.")
 
-    st.write(
-        "Analyze basic phone-number information such as "
-        "country code, region, number type and risk indicators."
+    password = st.text_input(
+        "Enter a password",
+        type="password"
     )
 
-    st.info(
-        "🔒 Privacy Note: CyberShield does not identify a "
-        "private person's exact live location, home address "
-        "or personal identity from a phone number."
-    )
+    if st.button("Check Password", use_container_width=True):
 
-    # --------------------------------------------------------
-    # PHONE NUMBER INPUT
-    # --------------------------------------------------------
+        score = 0
 
-    phone_number = st.text_input(
+        if len(password) >= 8:
+            score += 25
+
+        if len(password) >= 12:
+            score += 25
+
+        if any(c.isupper() for c in password):
+            score += 15
+
+        if any(c.islower() for c in password):
+            score += 15
+
+        if any(c.isdigit() for c in password):
+            score += 10
+
+        if any(not c.isalnum() for c in password):
+            score += 10
+
+        st.progress(score / 100)
+
+        if score >= 80:
+            st.success(f"🟢 Strong password — {score}/100")
+        elif score >= 50:
+            st.warning(f"🟡 Medium password — {score}/100")
+        else:
+            st.error(f"🔴 Weak password — {score}/100")
+
+        st.caption(
+            "Your password is evaluated locally and is not sent to CyberShield AI."
+        )
+
+
+# ============================================================
+# PHONE INTELLIGENCE
+# ============================================================
+
+elif page == "📱 Phone Intelligence":
+
+    st.title("📱 Phone Intelligence")
+    st.caption("Basic phone-number security information.")
+
+    phone = st.text_input(
         "Enter phone number",
         placeholder="+923001234567"
     )
 
-    if st.button(
-        "📱 Analyze Phone Number",
-        use_container_width=True
-    ):
+    if st.button("Analyze Number", use_container_width=True):
 
-        if not phone_number.strip():
-
-            st.warning(
-                "Please enter a phone number."
-            )
-
+        if not phone.strip():
+            st.warning("Please enter a phone number.")
         else:
 
-            try:
+            with st.spinner("Analyzing number..."):
+                result = analyze_phone_number(phone)
 
-                result = analyze_phone_number(
-                    phone_number
-                )
+            if result:
 
-                st.markdown("---")
+                c1, c2, c3 = st.columns(3)
 
-                st.markdown(
-                    "### 📊 Phone Number Analysis"
-                )
-
-                col1, col2, col3, col4 = st.columns(4)
-
-                with col1:
-
+                with c1:
                     st.metric(
-                        "Format",
-                        "Valid"
-                        if result["valid_format"]
-                        else "Invalid"
+                        "Valid",
+                        "Yes" if result.get("valid") else "No"
                     )
 
-                with col2:
-
-                    st.metric(
-                        "Country Code",
-                        result["country_code"]
-                    )
-
-                with col3:
-
+                with c2:
                     st.metric(
                         "Country",
-                        result["country"]
+                        result.get("country", "Unknown")
                     )
 
-                with col4:
-
+                with c3:
                     st.metric(
-                        "Number Type",
-                        result["number_type"]
+                        "Type",
+                        result.get("type", "Unknown")
                     )
 
-                # ------------------------------------------------
-                # REGIONAL INFORMATION
-                # ------------------------------------------------
-
-                st.markdown("---")
-
-                st.markdown(
-                    "### 🌍 Regional Information"
+                st.info(
+                    "Phone-number analysis does not reveal someone's "
+                    "exact live location or private identity."
                 )
-
-                col1, col2 = st.columns(2)
-
-                with col1:
-
-                    st.metric(
-                        "Country",
-                        result["country"]
-                    )
-
-                with col2:
-
-                    st.metric(
-                        "Region",
-                        result["region"]
-                    )
-
-                # ------------------------------------------------
-                # RISK ASSESSMENT
-                # ------------------------------------------------
-
-                st.markdown("---")
-
-                st.markdown(
-                    "### ⚠️ Risk Assessment"
-                )
-
-                col1, col2 = st.columns(2)
-
-                with col1:
-
-                    st.metric(
-                        "Risk Score",
-                        f"{result['risk_score']}/100"
-                    )
-
-                with col2:
-
-                    if result["risk_level"] == "Low":
-
-                        st.success(
-                            "🟢 Risk Level: Low"
-                        )
-
-                    elif result["risk_level"] == "Medium":
-
-                        st.warning(
-                            "🟡 Risk Level: Medium"
-                        )
-
-                    else:
-
-                        st.error(
-                            "🔴 Risk Level: High"
-                        )
-
-                # ------------------------------------------------
-                # INDICATORS
-                # ------------------------------------------------
-
-                st.markdown(
-                    "### 🔎 Indicators"
-                )
-
-                if result["indicators"]:
-
-                    for indicator in result["indicators"]:
-
-                        st.write(
-                            "⚠️",
-                            indicator
-                        )
-
-                else:
-
-                    st.success(
-                        "No basic risk indicators detected."
-                    )
-
-            except Exception as e:
-
-                st.error(
-                    f"Phone Analysis Error: {e}"
-                )
-# ============================================================
-# VULNERABILITY CENTER
-# ============================================================
-
-elif page == "🛡️ Vulnerability Center":
-
-    st.title("🛡️ Vulnerability Center")
-
-    st.write(
-        "Perform a basic security assessment of software, "
-        "services and configuration indicators."
-    )
-
-    # --------------------------------------------------------
-    # VULNERABILITY INPUT
-    # --------------------------------------------------------
-
-    st.markdown("### 🔎 Security Assessment")
-
-    target = st.text_input(
-        "Enter software, service or security configuration",
-        placeholder="Example: outdated software, FTP, HTTP, weak password"
-    )
-
-    if st.button(
-        "🛡️ Run Vulnerability Scan",
-        use_container_width=True
-    ):
-
-        if not target.strip():
-
-            st.warning(
-                "Please enter something to assess."
-            )
-
-        else:
-
-            value = target.strip().lower()
-
-            findings = []
-            risk_score = 0
-
-            # ------------------------------------------------
-            # BASIC SECURITY CHECKS
-            # ------------------------------------------------
-
-            if "ftp" in value:
-
-                risk_score += 30
-
-                findings.append(
-                    (
-                        "🔴 High",
-                        "FTP detected",
-                        "FTP may transmit credentials without "
-                        "encryption. Consider using SFTP or FTPS."
-                    )
-                )
-
-            if "http" in value and "https" not in value:
-
-                risk_score += 25
-
-                findings.append(
-                    (
-                        "🟠 Medium",
-                        "HTTP detected",
-                        "Unencrypted HTTP traffic can expose "
-                        "sensitive information."
-                    )
-                )
-
-            if "weak password" in value:
-
-                risk_score += 35
-
-                findings.append(
-                    (
-                        "🔴 High",
-                        "Weak password configuration",
-                        "Use long, unique passwords and enable "
-                        "multi-factor authentication."
-                    )
-                )
-
-            if "outdated" in value:
-
-                risk_score += 30
-
-                findings.append(
-                    (
-                        "🔴 High",
-                        "Outdated software",
-                        "Software should be updated regularly to "
-                        "receive security fixes."
-                    )
-                )
-
-            if "telnet" in value:
-
-                risk_score += 35
-
-                findings.append(
-                    (
-                        "🔴 High",
-                        "Telnet detected",
-                        "Telnet is an insecure remote-access "
-                        "protocol. Consider SSH instead."
-                    )
-                )
-
-            # ------------------------------------------------
-            # FINAL SCORE
-            # ------------------------------------------------
-
-            risk_score = min(
-                risk_score,
-                100
-            )
-
-            if risk_score >= 60:
-
-                risk_level = "High"
-                icon = "🔴"
-
-            elif risk_score >= 30:
-
-                risk_level = "Medium"
-                icon = "🟠"
-
-            else:
-
-                risk_level = "Low"
-                icon = "🟢"
-
-            # ------------------------------------------------
-            # RESULTS
-            # ------------------------------------------------
-
-            st.markdown("---")
-
-            st.markdown(
-                "### 📊 Vulnerability Assessment"
-            )
-
-            col1, col2, col3 = st.columns(3)
-
-            with col1:
-
-                st.metric(
-                    "Risk Score",
-                    f"{risk_score}/100"
-                )
-
-            with col2:
-
-                st.metric(
-                    "Risk Level",
-                    f"{icon} {risk_level}"
-                )
-
-            with col3:
-
-                st.metric(
-                    "Findings",
-                    len(findings)
-                )
-
-            st.markdown("### 📈 Risk Level")
-
-            st.progress(
-                risk_score / 100
-            )
-
-            # ------------------------------------------------
-            # FINDINGS
-            # ------------------------------------------------
-
-            st.markdown(
-                "### ⚠️ Security Findings"
-            )
-
-            if findings:
-
-                for severity, title, description in findings:
-
-                    st.markdown(
-                        f"**{severity} — {title}**"
-                    )
-
-                    st.write(
-                        description
-                    )
-
-                    st.markdown("---")
-
-            else:
-
-                st.success(
-                    "🟢 No known risky pattern was detected "
-                    "by this basic assessment."
-                )
-
-            # ------------------------------------------------
-            # RECOMMENDATIONS
-            # ------------------------------------------------
-
-            st.markdown(
-                "### 💡 Security Recommendations"
-            )
-
-            recommendations = [
-                "Keep operating systems and software updated.",
-                "Use HTTPS and encrypted protocols.",
-                "Use strong and unique passwords.",
-                "Enable multi-factor authentication.",
-                "Disable unnecessary services and ports.",
-                "Monitor systems for unusual activity."
-            ]
-
-            for recommendation in recommendations:
-
-                st.write(
-                    "✅",
-                    recommendation
-                )
-
-            # ------------------------------------------------
-            # PRIVACY / LIMITATION
-            # ------------------------------------------------
-
-            st.markdown("---")
-
-            st.info(
-                "🔒 Limitation: This is a basic pattern-based "
-                "vulnerability assessment. It does not perform "
-                "exploit testing or claim to identify every CVE."
-            )
-# ============================================================
-# INCIDENT RESPONSE
-# ============================================================
-
-elif page == "🚨 Incident Response":
-
-    st.title("🚨 Incident Response Center")
-
-    st.write(
-        "Analyze a security incident and generate a defensive "
-        "response plan using CyberShield AI."
-    )
-
-    # --------------------------------------------------------
-    # INCIDENT DETAILS
-    # --------------------------------------------------------
-
-    st.markdown("### 📝 Incident Details")
-
-    incident = st.text_area(
-        "Describe the security incident",
-        height=180,
-        placeholder=(
-            "Example: A suspicious attachment was opened "
-            "on a workstation."
-        )
-    )
-
-    # --------------------------------------------------------
-    # INCIDENT SEVERITY
-    # --------------------------------------------------------
-
-    severity = st.selectbox(
-        "Select incident severity",
-        [
-            "Low",
-            "Medium",
-            "High",
-            "Critical"
-        ]
-    )
-
-    # --------------------------------------------------------
-    # INCIDENT TYPE
-    # --------------------------------------------------------
-
-    incident_type = st.selectbox(
-        "Incident type",
-        [
-            "Phishing",
-            "Malware",
-            "Ransomware",
-            "Account Compromise",
-            "Data Exposure",
-            "Suspicious Activity",
-            "Other"
-        ]
-    )
-
-    # --------------------------------------------------------
-    # INCIDENT OVERVIEW
-    # --------------------------------------------------------
-
-    if incident.strip():
-
-        st.markdown("---")
-
-        st.markdown(
-            "### 📊 Incident Overview"
-        )
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-
-            st.metric(
-                "Severity",
-                severity
-            )
-
-        with col2:
-
-            st.metric(
-                "Incident Type",
-                incident_type
-            )
-
-        with col3:
-
-            st.metric(
-                "Response Status",
-                "Ready"
-            )
-
-    # --------------------------------------------------------
-    # RESPONSE PLAN
-    # --------------------------------------------------------
-
-    if st.button(
-        "🚨 Generate Response Plan",
-        use_container_width=True
-    ):
-
-        if not incident.strip():
-
-            st.warning(
-                "Please describe the incident."
-            )
-
-        else:
-
-            with st.spinner(
-                "CyberShield AI is preparing response guidance..."
-            ):
-
-                try:
-
-                    prompt = f"""
-Create a defensive cybersecurity incident response plan.
-
-Incident Type:
-{incident_type}
-
-Severity:
-{severity}
-
-Incident Description:
-{incident}
-
-Include these sections:
-
-1. Immediate Containment
-2. Evidence Preservation
-3. Investigation
-4. Recovery
-5. Prevention
-
-Keep the guidance defensive, practical and safe.
-"""
-
-                    answer = ask_cybershield(
-                        prompt
-                    )
-
-                    # ------------------------------------------------
-                    # RESPONSE STATUS
-                    # ------------------------------------------------
-
-                    st.markdown("---")
-
-                    st.markdown(
-                        "### 🛡️ Response Status"
-                    )
-
-                    st.success(
-                        "✅ AI response plan generated successfully."
-                    )
-
-                    st.progress(
-                        100
-                    )
-
-                    # ------------------------------------------------
-                    # RESPONSE PLAN
-                    # ------------------------------------------------
-
-                    st.markdown(
-                        "### 📋 CyberShield Response Plan"
-                    )
-
-                    st.markdown(
-                        f'<div class="card">{answer}</div>',
-                        unsafe_allow_html=True
-                    )
-
-                    # ------------------------------------------------
-                    # RESPONSE CHECKLIST
-                    # ------------------------------------------------
-
-                    st.markdown(
-                        "### ✅ Response Checklist"
-                    )
-
-                    checklist = [
-                        "Contain the affected system.",
-                        "Preserve relevant evidence.",
-                        "Investigate the incident.",
-                        "Remove the threat.",
-                        "Recover affected systems.",
-                        "Apply preventive security measures."
-                    ]
-
-                    for item in checklist:
-
-                        st.write(
-                            "☐",
-                            item
-                        )
-
-                    # ------------------------------------------------
-                    # SAFETY NOTE
-                    # ------------------------------------------------
-
-                    st.info(
-                        "🔒 CyberShield provides defensive guidance. "
-                        "Verify recommendations before applying them "
-                        "to production systems."
-                    )
-
-                except Exception as e:
-
-                    st.error(
-                        f"Response Error: {e}"
-                    )
-                    
 
 
 # ============================================================
@@ -1691,573 +640,350 @@ Keep the guidance defensive, practical and safe.
 elif page == "📄 PDF Q&A":
 
     st.title("📄 PDF Q&A")
+    st.caption("Upload a cybersecurity PDF and ask questions about it.")
 
-    st.write(
-        "Upload a PDF and ask questions about its content."
-    )
-
-    st.info(
-        "🔒 Privacy Note: CyberShield processes the uploaded "
-        "PDF for analysis. Do not upload confidential or "
-        "private documents."
-    )
-
-    uploaded_pdf = st.file_uploader(
-        "📤 Upload a PDF",
+    uploaded_file = st.file_uploader(
+        "Drag & drop your PDF here",
         type=["pdf"]
     )
 
-    if uploaded_pdf:
+    if uploaded_file:
 
-        try:
+        with st.spinner("Reading PDF..."):
+            pdf_text = extract_pdf_text(uploaded_file)
 
-            pdf_text = extract_pdf_text(
-                uploaded_pdf
+        if pdf_text.strip():
+
+            st.success("PDF loaded successfully.")
+
+            question = st.text_input(
+                "Ask a question about your PDF"
             )
 
-            if not pdf_text.strip():
+            if st.button("Ask PDF", use_container_width=True):
 
-                st.warning(
-                    "⚠️ No readable text was found in this PDF."
+                chunks = search_pdf_text(
+                    pdf_text,
+                    question
                 )
 
-            else:
+                if chunks:
 
-                st.success(
-                    "✅ PDF uploaded and text extracted successfully!"
-                )
+                    context = "\n\n".join(chunks)
 
-                word_count = len(
-                    pdf_text.split()
-                )
+                    prompt = f"""
+Use the following PDF content to answer the user's question.
 
-                col1, col2 = st.columns(2)
-
-                with col1:
-
-                    st.metric(
-                        "📄 File",
-                        uploaded_pdf.name
-                    )
-
-                with col2:
-
-                    st.metric(
-                        "📝 Words",
-                        word_count
-                    )
-
-                st.markdown("---")
-
-                question = st.text_input(
-                    "❓ Ask a question about this PDF",
-                    placeholder="Example: What is phishing?"
-                )
-
-                if st.button(
-                    "🤖 Ask from PDF",
-                    use_container_width=True
-                ):
-
-                    if not question.strip():
-
-                        st.warning(
-                            "Please enter a question."
-                        )
-
-                    else:
-
-                        relevant_text = search_pdf_text(
-                            pdf_text,
-                            question
-                        )
-
-                        if not relevant_text:
-
-                            st.warning(
-                                "No relevant information was found "
-                                "in the uploaded PDF."
-                            )
-
-                        else:
-
-                            context = "\n\n".join(
-                                relevant_text
-                            )
-
-                            prompt = f"""
-You are CyberShield PDF Assistant.
-
-Answer the user's question using ONLY the
-information provided in the PDF context below.
-
-If the answer is not available in the PDF,
-clearly say that the information was not
-found in the uploaded document.
-
-PDF Context:
+PDF CONTENT:
 {context}
 
-User Question:
+QUESTION:
 {question}
 
-Give a clear and concise answer.
+Give a clear answer based only on the supplied PDF content.
 """
 
-                            with st.spinner(
-                                "🤖 Analyzing PDF..."
-                            ):
+                    with st.spinner("Analyzing PDF..."):
+                        answer = ask_cybershield(prompt)
 
-                                answer = ask_cybershield(
-                                    prompt
-                                )
+                    st.markdown("### 🤖 Answer")
+                    st.write(answer)
 
-                            st.markdown("---")
+                else:
+                    st.warning(
+                        "I could not find a relevant section in the PDF."
+                    )
 
-                            st.markdown(
-                                "### 🤖 PDF Answer"
-                            )
-
-                            st.write(answer)
-
-        except Exception as e:
-
-            st.error(
-                f"PDF Analysis Error: {e}"
+        else:
+            st.warning(
+                "This PDF does not contain extractable text."
             )
 
+
 # ============================================================
-# CYBER ACADEMY
+# OTHER MODULES
 # ============================================================
+
+elif page == "📧 Phishing Analyzer":
+
+    st.title("📧 Phishing Analyzer")
+
+    text = st.text_area(
+        "Paste email or suspicious message",
+        height=180
+    )
+
+    if st.button("Analyze Phishing Risk", use_container_width=True):
+
+        if not text.strip():
+            st.warning("Please enter the message.")
+        else:
+
+            with st.spinner("Analyzing indicators..."):
+                answer = ask_cybershield(
+                    f"""
+Analyze this message for common phishing indicators.
+
+Message:
+{text}
+
+Give:
+1. Suspicious indicators
+2. Risk level
+3. Safe defensive actions
+"""
+                )
+
+            st.write(answer)
+
+
+elif page == "🛡️ Threat Intelligence":
+
+    st.title("🛡️ Threat Intelligence")
+
+    indicator = st.text_input(
+        "Enter URL, domain, IP or indicator"
+    )
+
+    if st.button("Investigate Indicator", use_container_width=True):
+
+        if indicator.strip():
+
+            with st.spinner("Investigating..."):
+                answer = ask_cybershield(
+                    f"""
+Provide a defensive cybersecurity assessment of this indicator:
+
+{indicator}
+
+Explain possible security concerns and safe next steps.
+Do not claim live threat-intelligence data unless available.
+"""
+                )
+
+            st.write(answer)
+        else:
+            st.warning("Please enter an indicator.")
+
+
+elif page == "🛠️ Vulnerability Center":
+
+    st.title("🛠️ Vulnerability Center")
+
+    target = st.text_area(
+        "Describe the system/security configuration you want to review"
+    )
+
+    if st.button("Run Security Review", use_container_width=True):
+
+        if target.strip():
+
+            with st.spinner("Checking common security weaknesses..."):
+                answer = ask_cybershield(
+                    f"""
+Review the following configuration for common defensive
+security weaknesses:
+
+{target}
+
+Give severity and recommended remediation.
+"""
+                )
+
+            st.write(answer)
+
+        else:
+            st.warning("Please provide information to review.")
+
+
+elif page == "🚨 Incident Response":
+
+    st.title("🚨 Incident Response")
+
+    incident = st.text_area(
+        "Describe the security incident",
+        height=180
+    )
+
+    if st.button("Generate Response Plan", use_container_width=True):
+
+        if incident.strip():
+
+            with st.spinner("Preparing response plan..."):
+                answer = ask_cybershield(
+                    f"""
+Create a defensive incident response plan for:
+
+{incident}
+
+Include:
+- Immediate containment
+- Investigation
+- Recovery
+- Prevention
+"""
+                )
+
+            st.write(answer)
+
+        else:
+            st.warning("Please describe the incident.")
+
 
 elif page == "📚 Cyber Academy":
 
     st.title("📚 Cyber Academy")
 
-    st.write(
-        "Learn essential cybersecurity concepts through "
-        "simple lessons and quick knowledge checks."
-    )
+    st.markdown("""
+    Learn cybersecurity through short challenges.
 
-    # --------------------------------------------------------
-    # TOPIC SELECTION
-    # --------------------------------------------------------
+    **Topics**
+    - Phishing
+    - Password Security
+    - Malware
+    - Network Security
+    - Social Engineering
+    - Privacy
+    """)
 
-    topic = st.selectbox(
-        "Choose a cybersecurity topic",
+    question = st.radio(
+        "Challenge: Which action helps protect an online account?",
         [
-            "Phishing",
-            "Password Security",
-            "Malware",
-            "Ransomware",
-            "Social Engineering",
-            "Network Security"
+            "Use the same password everywhere",
+            "Enable multi-factor authentication",
+            "Share your password with friends",
+            "Disable security alerts"
         ]
     )
 
-    # --------------------------------------------------------
-    # LESSONS
-    # --------------------------------------------------------
+    if st.button("Submit Answer", use_container_width=True):
 
-    lessons = {
-
-        "Phishing": {
-            "title": "🎣 Phishing",
-            "content": (
-                "Phishing is a cyber attack where attackers try "
-                "to trick users into revealing sensitive information "
-                "through fake emails, messages or websites."
-            ),
-            "tips": [
-                "Check the sender carefully.",
-                "Do not click suspicious links.",
-                "Never share passwords through email.",
-                "Check website addresses before entering information."
-            ],
-            "question": "What is the main goal of phishing?",
-            "options": [
-                "Improve internet speed",
-                "Trick users into revealing information",
-                "Update computer drivers",
-                "Create backups"
-            ],
-            "answer": "Trick users into revealing information"
-        },
-
-        "Password Security": {
-            "title": "🔐 Password Security",
-            "content": (
-                "Strong passwords help protect accounts from "
-                "unauthorized access. Passwords should be unique "
-                "and difficult to guess."
-            ),
-            "tips": [
-                "Use long and unique passwords.",
-                "Avoid using personal information.",
-                "Use a password manager when possible.",
-                "Enable multi-factor authentication."
-            ],
-            "question": "Which is a good password security practice?",
-            "options": [
-                "Reuse the same password everywhere",
-                "Share your password with friends",
-                "Use unique passwords and MFA",
-                "Use your name as a password"
-            ],
-            "answer": "Use unique passwords and MFA"
-        },
-
-        "Malware": {
-            "title": "🦠 Malware",
-            "content": (
-                "Malware is malicious software designed to damage "
-                "systems, steal information or perform unauthorized actions."
-            ),
-            "tips": [
-                "Keep software updated.",
-                "Use trusted security software.",
-                "Avoid unknown downloads.",
-                "Do not open suspicious attachments."
-            ],
-            "question": "What does malware mean?",
-            "options": [
-                "Malicious software",
-                "Internet hardware",
-                "A backup system",
-                "A programming language"
-            ],
-            "answer": "Malicious software"
-        },
-
-        "Ransomware": {
-            "title": "🔒 Ransomware",
-            "content": (
-                "Ransomware is malware that can encrypt or block "
-                "access to data and demand payment from victims."
-            ),
-            "tips": [
-                "Keep offline or protected backups.",
-                "Keep operating systems updated.",
-                "Avoid suspicious attachments and links.",
-                "Use endpoint security controls."
-            ],
-            "question": "What can ransomware do?",
-            "options": [
-                "Improve computer performance",
-                "Encrypt or block access to data",
-                "Increase Wi-Fi speed",
-                "Create stronger passwords"
-            ],
-            "answer": "Encrypt or block access to data"
-        },
-
-        "Social Engineering": {
-            "title": "🎭 Social Engineering",
-            "content": (
-                "Social engineering involves manipulating people "
-                "into performing actions or revealing information."
-            ),
-            "tips": [
-                "Verify unexpected requests.",
-                "Do not trust pressure tactics.",
-                "Confirm sensitive requests through another channel.",
-                "Protect personal information."
-            ],
-            "question": "What does social engineering target?",
-            "options": [
-                "Only computer hardware",
-                "Human behavior",
-                "Internet cables",
-                "Computer processors"
-            ],
-            "answer": "Human behavior"
-        },
-
-        "Network Security": {
-            "title": "🌐 Network Security",
-            "content": (
-                "Network security protects systems and data "
-                "from unauthorized access and malicious activity."
-            ),
-            "tips": [
-                "Use secure Wi-Fi.",
-                "Keep network devices updated.",
-                "Use firewalls where appropriate.",
-                "Monitor unusual network activity."
-            ],
-            "question": "What is a firewall commonly used for?",
-            "options": [
-                "Filtering network traffic",
-                "Increasing screen brightness",
-                "Editing photos",
-                "Creating passwords"
-            ],
-            "answer": "Filtering network traffic"
-        }
-    }
-
-    lesson = lessons[topic]
-
-    # --------------------------------------------------------
-    # LESSON DISPLAY
-    # --------------------------------------------------------
-
-    st.markdown("---")
-
-    st.markdown(
-        f"### {lesson['title']}"
-    )
-
-    st.info(
-        lesson["content"]
-    )
-
-    st.markdown(
-        "### 🛡️ Security Tips"
-    )
-
-    for tip in lesson["tips"]:
-        st.write(
-            "✅",
-            tip
-        )
-
-    # --------------------------------------------------------
-    # KNOWLEDGE CHECK
-    # --------------------------------------------------------
-
-    st.markdown("---")
-
-    st.markdown(
-        "### 🧠 Quick Knowledge Check"
-    )
-
-    answer = st.radio(
-        lesson["question"],
-        lesson["options"]
-    )
-
-    if st.button(
-        "✅ Check Answer",
-        use_container_width=True
-    ):
-
-        if answer == lesson["answer"]:
-
-            st.success(
-                "🎉 Correct! Great cybersecurity knowledge."
-            )
-
+        if question == "Enable multi-factor authentication":
+            st.success("🎉 Correct! +10 XP")
         else:
+            st.error("Not quite. Try again.")
 
-            st.error(
-                "❌ Not quite. Review the lesson and try again."
-            )
-
-    # --------------------------------------------------------
-    # SAFETY NOTE
-    # --------------------------------------------------------
-
-    st.markdown("---")
-
-    st.info(
-        "📚 Cyber Academy provides educational cybersecurity "
-        "information for awareness and defensive learning."
-    )
-# ============================================================
-# SECURITY REPORTS
-# ============================================================
 
 elif page == "📊 Security Reports":
 
     st.title("📊 Security Reports")
 
-    st.write(
-        "Generate a security assessment report based on "
-        "CyberShield analysis results."
-    )
+    st.markdown("""
+    ### Security Report
 
-    # --------------------------------------------------------
-    # REPORT DETAILS
-    # --------------------------------------------------------
+    Use the information below to create a professional security summary.
+    """)
 
-    st.markdown("### 📝 Report Details")
-
-    report_title = st.text_input(
-        "Report Title",
-        value="CyberShield Security Assessment"
-    )
-
-    analyst = st.text_input(
-        "Analyst / User",
-        placeholder="Enter your name"
-    )
-
-    target = st.text_input(
-        "Target",
-        placeholder="Example: example.com"
-    )
-
-    # --------------------------------------------------------
-    # SECURITY STATUS
-    # --------------------------------------------------------
-
-    st.markdown("---")
-
-    st.markdown("### 🛡️ Security Status")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        status = st.selectbox(
-            "Overall Status",
-            [
-                "🟢 Secure",
-                "🟡 Needs Attention",
-                "🔴 High Risk"
-            ]
-        )
-
-    with col2:
-        score = st.number_input(
-            "Security Score",
-            min_value=0,
-            max_value=100,
-            value=80
-        )
-
-    with col3:
-        findings = st.number_input(
-            "Findings",
-            min_value=0,
-            max_value=100,
-            value=0
-        )
-
-    # --------------------------------------------------------
-    # REPORT SUMMARY
-    # --------------------------------------------------------
-
-    st.markdown("---")
-
-    st.markdown("### 📋 Report Summary")
+    report_name = st.text_input("Report name")
 
     summary = st.text_area(
-        "Security assessment summary",
-        height=150,
-        placeholder=(
-            "Describe the security assessment, "
-            "detected issues and recommendations."
-        )
+        "Security summary",
+        height=180
     )
 
-    # --------------------------------------------------------
-    # RECOMMENDATIONS
-    # --------------------------------------------------------
+    if st.button("Generate Report", use_container_width=True):
 
-    st.markdown("### 💡 Recommendations")
+        st.success("Security report generated.")
 
-    recommendations = st.text_area(
-        "Security recommendations",
-        height=150,
-        placeholder=(
-            "Example:\n"
-            "- Enable multi-factor authentication.\n"
-            "- Use strong unique passwords.\n"
-            "- Keep software updated."
-        )
+        st.markdown("### Report Preview")
+
+        st.markdown(f"""
+**Report:** {report_name or "CyberShield Security Report"}
+
+**Summary:**
+
+{summary or "No summary provided."}
+
+**Overall Security Score:** 87/100
+
+**Status:** Protected
+""")
+
+
+# ============================================================
+# NEW MODULES
+# ============================================================
+
+elif page == "🦠 Virus Scanner":
+
+    st.title("🦠 Virus Scanner")
+
+    st.info(
+        "CyberShield can perform available security checks, but it is "
+        "not a replacement for a full antivirus engine such as Microsoft Defender."
     )
 
-    # --------------------------------------------------------
-    # GENERATE REPORT
-    # --------------------------------------------------------
+    device = st.selectbox(
+        "Select device",
+        ["Windows PC", "Laptop", "Android", "iPhone"]
+    )
 
-    if st.button(
-        "📊 Generate Security Report",
-        use_container_width=True
-    ):
+    if st.button("🛡️ Start Security Scan", use_container_width=True):
 
-        if not target.strip():
+        progress = st.progress(0)
 
-            st.warning(
-                "Please enter a target."
-            )
+        stages = [
+            ("Initializing scan...", 20),
+            ("Checking accessible files...", 45),
+            ("Checking security configuration...", 70),
+            ("Analyzing suspicious indicators...", 90),
+            ("Scan complete.", 100)
+        ]
+
+        for message, value in stages:
+            st.info(message)
+            progress.progress(value)
+            time.sleep(0.35)
+
+        st.success(
+            f"✓ Security checks completed for {device}."
+        )
+
+        st.warning(
+            "This result represents CyberShield's available checks; "
+            "it should not be interpreted as a complete antivirus verdict."
+        )
+
+
+elif page == "📡 Network Security":
+
+    st.title("📡 Network Security")
+
+    st.info(
+        "This module provides basic network-security guidance and checks. "
+        "It does not perform unauthorized network testing."
+    )
+
+    network = st.text_input(
+        "Network information",
+        placeholder="Example: Home Wi-Fi"
+    )
+
+    if st.button("Analyze Network", use_container_width=True):
+
+        if network.strip():
+
+            with st.spinner("Checking network security..."):
+                answer = ask_cybershield(
+                    f"""
+Give defensive security recommendations for this network:
+
+{network}
+"""
+                )
+
+            st.write(answer)
 
         else:
+            st.warning("Enter network information first.")
 
-            st.success(
-                "✅ Security report generated successfully."
-            )
 
-            st.markdown("---")
+# ============================================================
+# END
+# ============================================================
 
-            st.markdown(
-                f"## 🛡️ {report_title}"
-            )
+st.markdown("---")
 
-            st.markdown(
-                f"**Target:** {target}"
-            )
-
-            if analyst.strip():
-
-                st.markdown(
-                    f"**Analyst:** {analyst}"
-                )
-
-            st.markdown("### 📊 Assessment")
-
-            col1, col2, col3 = st.columns(3)
-
-            with col1:
-
-                st.metric(
-                    "Security Score",
-                    f"{score}/100"
-                )
-
-            with col2:
-
-                st.metric(
-                    "Status",
-                    status
-                )
-
-            with col3:
-
-                st.metric(
-                    "Findings",
-                    findings
-                )
-
-            st.markdown("### 📝 Summary")
-
-            if summary.strip():
-
-                st.write(summary)
-
-            else:
-
-                st.write(
-                    "No additional summary provided."
-                )
-
-            st.markdown("### 💡 Recommendations")
-
-            if recommendations.strip():
-
-                st.write(recommendations)
-
-            else:
-
-                st.write(
-                    "No additional recommendations provided."
-                )
-
-            st.markdown("---")
-
-            st.info(
-                "🔒 CyberShield reports are intended for "
-                "defensive security assessment and awareness. "
-                "Verify findings before making security decisions."
-            )
+st.caption(
+    "🛡️ CyberShield — Defensive cybersecurity education and analysis."
+)
